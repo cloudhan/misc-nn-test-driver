@@ -39,7 +39,35 @@ class ConvAddZeros(torch.nn.Module):
     return [torch.rand([1, 3, 24, 24]), torch.zeros([1, 3, 24, 24])]
 
 
-class ConvAddZeros(torch.nn.Module):
+class ConvAddDev1(torch.nn.Module):
+
+  def __init__(self):
+    super().__init__()
+    self.conv1 = torch.nn.Conv2d(4, 1, 4, padding=0)
+    self.conv1.weight = torch.nn.parameter.Parameter(torch.ones_like(self.conv1.weight))
+
+  def forward(self, x):
+    return self.conv1(x[0]) + x[1]
+
+  def dummy_inputs(self):
+    # return [torch.rand([1, 1, 4, 4]), torch.rand([1, 1, 4, 4])]
+    return [torch.arange(64, dtype=torch.float32).reshape([1, 4, 4, 4]), torch.zeros([1, 1, 1, 1])]
+
+
+class ConvAdd(torch.nn.Module):
+
+  def __init__(self):
+    super().__init__()
+    self.conv1 = torch.nn.Conv2d(3, 5, 3)
+
+  def forward(self, x):
+    return self.conv1(x[0]) + x[1]
+
+  def dummy_inputs(self):
+    return [torch.rand([1, 3, 15, 15]), torch.rand([1, 5, 13, 13])]
+
+
+class ConvConvAdd(torch.nn.Module):
 
   def __init__(self):
     super().__init__()
@@ -53,22 +81,20 @@ class ConvAddZeros(torch.nn.Module):
     return [torch.rand([1, 3, 24, 24]), torch.rand([1, 3, 24, 24])]
 
 
-class ConvAddConvAndAdd(torch.nn.Module):
+class DepthwiseConv(torch.nn.Module):
 
   def __init__(self):
     super().__init__()
-    self.conv1 = torch.nn.Conv2d(3, 3, 3, padding=1)
-    self.conv2 = torch.nn.Conv2d(3, 3, 3, padding=1)
-    self.conv3 = torch.nn.Conv2d(3, 3, 3, padding=1)
+    ci_per_group = 1
+    co_per_group = 1
+    self.group = 5
+    self.dw_conv = torch.nn.Conv2d(ci_per_group * self.group, co_per_group * self.group, 3, groups=self.group)
 
   def forward(self, x):
-    y = self.conv1(x[0]) + self.conv2(x[1])
-    out1 = self.conv3(y)
-    out2 = y + x[0]
-    return [out1, out2]
+    return self.dw_conv(x[0])
 
   def dummy_inputs(self):
-    return [torch.rand([1, 3, 24, 24]), torch.rand([1, 3, 24, 24])]
+    return [torch.rand([1, self.group, 5, 5])]
 
 
 for name, instance in dict(locals()).items():

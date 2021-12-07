@@ -8,11 +8,16 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("onnx_file")
+parser.add_argument("--random", action="store_true")
+parser.add_argument("--ones", action="store_true", help="generate data with np.ones")
 parser.add_argument("--repeat", "-r", default=1, type=int)
 args = parser.parse_args()
 
 import warnings
 import numpy as np
+if not args.random:
+  np.random.seed(0)
+
 import onnxruntime as ort
 
 ort.set_default_logger_severity(0)
@@ -39,7 +44,10 @@ def create_random_inputs(sess):
   for i in sess.get_inputs():
     dtype = onnx_type_to_dtype[i.type]
     shape = symbolic_shape_to_concrete_shape(i.shape)
-    inputs.append((i.name, np.random.normal(size=shape).astype(dtype)))
+    if args.ones:
+      inputs.append((i.name, np.ones(shape).astype(dtype)))
+    else:
+      inputs.append((i.name, np.random.normal(size=shape).astype(dtype)))
   return dict(inputs)
 
 
