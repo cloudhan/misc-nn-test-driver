@@ -26,6 +26,21 @@ AMulB = gen_binary_op("AMulB", "*", [torch.rand([65535]), torch.rand([65535])])
 ADivB = gen_binary_op("ADivB", "/", [torch.rand([64023]), torch.rand([64023])])
 
 
+class ConvDev1(torch.nn.Module):
+
+  def __init__(self):
+    super().__init__()
+    self.conv1 = torch.nn.Conv2d(192, 64, 1, padding=0)
+    self.conv1.weight = torch.nn.parameter.Parameter(torch.ones_like(self.conv1.weight))
+    self.conv1.bias = torch.nn.parameter.Parameter(torch.zeros_like(self.conv1.bias))
+
+  def forward(self, x):
+    return self.conv1(x[0])
+
+  def dummy_inputs(self):
+    return [torch.ones([1, 192, 14, 14])]
+
+
 class ConvAddZeros(torch.nn.Module):
 
   def __init__(self):
@@ -67,18 +82,23 @@ class ConvAdd(torch.nn.Module):
     return [torch.rand([1, 3, 15, 15]), torch.rand([1, 5, 13, 13])]
 
 
-class ConvConvAdd(torch.nn.Module):
+class DepthwiseConvDev1(torch.nn.Module):
 
   def __init__(self):
     super().__init__()
-    self.conv1 = torch.nn.Conv2d(3, 3, 3)
-    self.conv2 = torch.nn.Conv2d(3, 3, 3)
+    ci_per_group = 1
+    co_per_group = 1
+    self.group = 7
+    self.dw_conv = torch.nn.Conv2d(ci_per_group * self.group, co_per_group * self.group, 5, groups=self.group)
+    self.dw_conv.weight = torch.nn.parameter.Parameter(
+        torch.arange(self.dw_conv.weight.numel(), dtype=torch.float32).reshape(self.dw_conv.weight.shape))
+    self.dw_conv.bias = torch.nn.parameter.Parameter(torch.zeros_like(self.dw_conv.bias))
 
   def forward(self, x):
-    return self.conv1(x[0]) + self.conv2(x[1])
+    return self.dw_conv(x[0])
 
   def dummy_inputs(self):
-    return [torch.rand([1, 3, 24, 24]), torch.rand([1, 3, 24, 24])]
+    return [torch.ones([1, self.group, 5, 5])]
 
 
 class DepthwiseConv(torch.nn.Module):
@@ -87,7 +107,7 @@ class DepthwiseConv(torch.nn.Module):
     super().__init__()
     ci_per_group = 1
     co_per_group = 1
-    self.group = 5
+    self.group = 6
     self.dw_conv = torch.nn.Conv2d(ci_per_group * self.group, co_per_group * self.group, 3, groups=self.group)
 
   def forward(self, x):
