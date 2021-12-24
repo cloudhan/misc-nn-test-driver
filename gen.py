@@ -26,6 +26,14 @@ AMulB = gen_binary_op("AMulB", "*", [torch.rand([65535]), torch.rand([65535])])
 ADivB = gen_binary_op("ADivB", "/", [torch.rand([64023]), torch.rand([64023])])
 
 
+class ClipDev1(torch.nn.Module):
+
+  def forward(self, x):
+    return torch.clamp(x[0], min=10, max=11)
+
+  def dummy_inputs(self):
+    return [torch.zeros([29, 199, 14, 14])]
+
 class ConvDev1(torch.nn.Module):
 
   def __init__(self):
