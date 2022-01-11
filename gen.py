@@ -1,7 +1,10 @@
 import types
 
 import torch
+import warnings
 
+module_level_warning_catcher = warnings.catch_warnings()
+warnings.simplefilter("ignore")
 
 def gen_binary_op(name, op, dummy_data):
 
@@ -30,6 +33,14 @@ class ClipDev1(torch.nn.Module):
 
   def forward(self, x):
     return torch.clamp(x[0], min=10, max=11)
+
+  def dummy_inputs(self):
+    return [torch.zeros([29, 199, 14, 14])]
+
+class ReluDev1(torch.nn.Module):
+
+  def forward(self, x):
+    return torch.relu(x[0])
 
   def dummy_inputs(self):
     return [torch.zeros([29, 199, 14, 14])]
@@ -123,6 +134,14 @@ class DepthwiseConv(torch.nn.Module):
 
   def dummy_inputs(self):
     return [torch.rand([1, self.group, 5, 5])]
+
+class MaxPoolDev1(torch.nn.Module):
+
+  def forward(self, x):
+    return torch.max_pool2d(x[0], (2,2), (2,2), (0,0), (1,1), False)
+
+  def dummy_inputs(self):
+    return [torch.zeros([29, 199, 14, 14])]
 
 
 for name, instance in dict(locals()).items():
