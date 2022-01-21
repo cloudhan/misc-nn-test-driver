@@ -1,7 +1,7 @@
 import os
 import sys
 
-sys.path.insert(0, "/home/guangyunhan/workspaces/onnxruntime/build/Linux/Debug/build/lib/")
+sys.path.insert(0, "/home/guangyunhan/workspaces/onnxruntime/build/Linux/Release/build/lib/")
 os.environ["ORT_DEFAULT_MAX_VLOG_LEVEL"] = "100"
 if "LD_PRELOAD" in os.environ and "oclgrind-rt" in os.environ["LD_PRELOAD"]:
   os.environ["LIBOPENCL_SO_PATH"] = os.environ["LD_PRELOAD"]
