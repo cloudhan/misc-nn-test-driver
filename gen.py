@@ -37,6 +37,14 @@ class ClipDev1(torch.nn.Module):
   def dummy_inputs(self):
     return [torch.zeros([29, 199, 14, 14])]
 
+class ClipDev2(torch.nn.Module):
+
+  def forward(self, x):
+    return torch.clamp(x[0], min=0.0, max=1.0)
+
+  def dummy_inputs(self):
+    return [torch.zeros([1, 1, 256, 256])]
+
 class ReluDev1(torch.nn.Module):
 
   def forward(self, x):

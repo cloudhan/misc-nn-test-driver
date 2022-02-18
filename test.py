@@ -1,12 +1,7 @@
 import os
 import sys
 
-sys.path.insert(0, "/home/guangyunhan/workspaces/onnxruntime/build/Linux/Release/build/lib/")
-os.environ["ORT_DEFAULT_MAX_VLOG_LEVEL"] = "100"
-if "LD_PRELOAD" in os.environ and "oclgrind-rt" in os.environ["LD_PRELOAD"]:
-  os.environ["LIBOPENCL_SO_PATH"] = os.environ["LD_PRELOAD"]
-else:
-  os.environ["LIBOPENCL_SO_PATH"] = "/usr/local/cuda-11.1/targets/x86_64-linux/lib/libOpenCL.so"
+sys.path.insert(0, "/home/guangyunhan/workspaces/onnxruntime/build/Linux/Debug/build/lib/")
 
 import argparse
 
@@ -30,7 +25,11 @@ import onnx
 import onnxruntime as ort
 from onnxmanip import create_onnx_replace_outputs
 
-ort.set_default_logger_severity(0)
+log_severity = 0
+log_verbosity = 100
+
+ort.set_default_logger_severity(log_severity)
+ort.set_default_logger_verbosity(log_verbosity)
 
 
 def symbolic_shape_to_concrete_shape(shape, _stoi={}):
@@ -66,8 +65,15 @@ def execute_onnx(filename, inputs=None, outputs=None, provider=None):
     providers = [("CPUExecutionProvider", {})]
   else:
     providers = [provider, ("CPUExecutionProvider", {})]
+
   so = ort.SessionOptions()
+  so.log_severity_level = log_severity
+  so.log_verbosity_level = log_verbosity
   so.optimized_model_filepath = f"{providers[0][0]}_optimized_{os.path.basename(filename)}"
+
+  ro = ort.RunOptions()
+  ro.log_severity_level = log_severity
+  ro.log_verbosity_level = log_verbosity
 
   with tempfile.TemporaryDirectory() as tmp_dir:
     if outputs:
@@ -79,13 +85,16 @@ def execute_onnx(filename, inputs=None, outputs=None, provider=None):
     if inputs is None:
       inputs = create_random_inputs(sess)
     output_names = [node.name for node in sess.get_outputs()]
-    results = sess.run(output_names, inputs)
+    results = sess.run(output_names, inputs, run_options=ro)
     return results, inputs
 
 
 cpu_result, inputs = execute_onnx(args.onnx_file, outputs=args.output)
 for i in range(args.repeat):
-  cl_result, _ = execute_onnx(args.onnx_file, inputs, outputs=args.output, provider=("OpenCLExecutionProvider", {"use_fp16": args.fp16}))
+  cl_result, _ = execute_onnx(
+      args.onnx_file, inputs, outputs=args.output, provider=("OpenCLExecutionProvider", {
+          "use_fp16": args.fp16
+      }))
 
 abs_errors = []
 with warnings.catch_warnings():
