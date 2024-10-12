@@ -100,11 +100,13 @@ def slice_graph(args):
             # print(f"[ERROR]: cannot resolve {name}")
             # assert False
 
-    to_remove = [idx for idx, i in enumerate(model.graph.input) if i.name not in used_inputs]
+    # to_remove = [idx for idx, i in enumerate(model.graph.input) if i.name not in used_inputs]
+    to_remove = [idx for idx, i in enumerate(model.graph.input)]
     for idx in reversed(to_remove):
         model.graph.input.pop(idx)
 
-    to_remove = [idx for idx, o in enumerate(model.graph.output) if o.name not in used_outputs]
+    # to_remove = [idx for idx, o in enumerate(model.graph.output) if o.name not in used_outputs]
+    to_remove = [idx for idx, o in enumerate(model.graph.output)]
     for idx in reversed(to_remove):
         model.graph.output.pop(idx)
 
@@ -116,14 +118,14 @@ def slice_graph(args):
     for idx in reversed(to_remove):
         model.graph.node.pop(idx)
 
-    # for node in model.graph.node:
-    #     print(node.input)
-
     for i in args.input_tensors:
         model.graph.input.append(value_infos[i])
 
     for o in args.output_tensors:
-        model.graph.output.append(value_infos[o])
+        if o in value_infos:
+            model.graph.output.append(value_infos[o])
+        else:
+            model.graph.output.append(outputs[o])
 
 
     onnx.save_model(model, args.input_model + "_sliced.onnx")
