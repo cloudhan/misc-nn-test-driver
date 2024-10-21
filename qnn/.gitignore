@@ -1,2 +1,4 @@
 *.onnx
 *.so
+
+QDC_API_KEY

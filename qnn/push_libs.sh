@@ -31,7 +31,6 @@ set -ex
 
 
 adb shell mkdir -p ${DEV_DIR}
-adb push --sync perf_test.sh ${DEV_DIR}/
 
 if [[ $libs == "ort" ]]; then
   tmp=$(mktemp -d)
@@ -56,10 +55,10 @@ if [[ $libs == "qnn" ]]; then
     ${QNN_HOME}/lib/aarch64-android/libQnnHtp.so                 \
     ${QNN_HOME}/lib/aarch64-android/libQnnHtpPrepare.so          \
     ${QNN_HOME}/lib/aarch64-android/libQnnHtpV75Stub.so          \
-    ${QNN_HOME}/lib/hexagon-v75/unsigned/libQnnHtpV75Skel.so     \
     ${QNN_HOME}/bin/aarch64-android/qnn-net-run                  \
+    ${QNN_HOME}/lib/hexagon-v75/unsigned/libQnnHtpV75Skel.so     \
+    ${QNN_HOME}/lib/aarch64-android/libQnnHtpNetRunExtensions.so \
     backend_extension_config.json                                \
     htp_config.json                                              \
-    ${QNN_HOME}/lib/hexagon-v75/unsigned/libQnnHtpV75Skel.so     \
     ${DEV_DIR}/
 fi

@@ -22,7 +22,7 @@ def create_qnn_session(args):
         "htp_graph_finalization_optimization_mode": "3",
         "htp_arch": "75",
         # "soc_model": "60",
-        # "vtcm_mb": "8",
+        "vtcm_mb": "8",
         "enable_htp_fp16_precision": "1",
         "htp_performance_mode": "sustained_high_performance",
     }
